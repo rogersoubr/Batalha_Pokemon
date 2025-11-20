@@ -14,13 +14,13 @@ typedef struct Pokemon{
 typedef struct Treinador{
     char nome[100];
     int quantidade;
-    Pokemon P[50]
+    Pokemon P[100];
 } Treinador;
 
 int main(){
     //Pokemon P1, P2;
     Treinador T1, T2;
-    int result, rodada = 1;//define inicio e final
+    int rodada = 1;//define inicio e final
     FILE* arq = fopen("inicio_batalha.txt","r+t");
     if(arq == NULL){
         printf("Nao tem aquivo aqui");
@@ -40,7 +40,7 @@ int main(){
     for (int i = 0; i < T2.quantidade; i++){
         fscanf(arq,"%s %f %f %f %s", &T2.P[i].nome, &T2.P[i].ataque, &T2.P[i].defesa, &T2.P[i].vida, &T2.P[i].tipo);
     }
-    //imprimindo
+    //IMPRIMINDO JOGADORES ---------------------------------------------------------------------------
     printf("\nJOGADOR %s: \n",T1.nome);
     for (int i = 0; i < T1.quantidade; i++){
         printf("%s %.2f %.2f %.2f %s\n", T1.P[i].nome, T1.P[i].ataque, T1.P[i].defesa, T1.P[i].vida, T1.P[i].tipo);
@@ -53,69 +53,119 @@ int main(){
 
     fclose(arq);
 
-    //----------------------------------------------------------------------------------------
+    //BATALHA-----------------------------------------------------------------------------------------
 
-    FILE* arquivo = fopen("inicio_batalha.txt","w+t");
+    FILE* arquivo = fopen("fim_batalha.txt","w+t");
     int i =0, j=0;
+    if(arq == NULL){
+        printf("arquivo ou caminho errado");
+        return 1;
+    }   
+    
 
 
-    //tem q batalhar pelo menos uma vez
+    //tem q batalhar pelo menos uma vez -> deu errado
     //enquanto algum nao morrer, continua lutando entra si. tenho que isolar os P
-    //comparar os P
+    //comparar os P vida
     //quando algum morrer, vai indo ate todos morrerem
-    do{
+    while ((i < T1.quantidade) && (j<T2.quantidade)){
         printf("\nRODADA %d \n",rodada);
-        efeito(T1.P[i].nome,T2.P[j].nome, T1.P[i].tipo, T2.P[j].tipo, T1.P[i].ataque, T2.P[j].defesa, T1.P[i].vida ,&T2.P[j].vida);
+        //PRIMEIRO ATAQUE-----------------------------------------------------------------------------
+        float vida_antes = T2.P[j].vida;
+        efeito(T1.P[i].nome, T2.P[j].nome,
+              T1.P[i].tipo, T2.P[j].tipo, 
+              T1.P[i].ataque, T2.P[j].defesa, 
+              T1.P[i].vida ,&T2.P[j].vida);
 
+        //comparar se P morreu
         if (T2.P[j].vida <= 0){
-            printf("%s matou %s\n",T1.P[i].nome, T2.P[j].nome);
-            j++;
-            continue;//vou ter que usar para comeca outra rodada
+            fprintf(arquivo,"%s venceu %s\n",T1.P[i].nome, T2.P[j].nome);
+            printf("%s venceu %s\n",T1.P[i].nome, T2.P[j].nome);
+            j++;//tem que ser antes do continue, caso ele morra
+            if (j >= T2.quantidade) break; //olha se ainda tem P
         }
 
-        efeito(T1.P[j].nome,T2.P[i].nome, T1.P[j].tipo, T2.P[i].tipo, T1.P[j].ataque, T2.P[i].defesa, T1.P[j].vida ,&T2.P[i].vida);
+        //SEGUNDO ATAQUE-----------------------------------------------------------------------------
+        vida_antes = T1.P[i].vida;
+        efeito(T2.P[j].nome, T1.P[i].nome, 
+            T2.P[j].tipo, T1.P[i].tipo, 
+            T2.P[j].ataque, T1.P[i].defesa, 
+            T2.P[j].vida ,&T1.P[i].vida);
 
-        if (T2.P[i].vida <= 0){
-            printf("%s matou %s\n",T1.P[i].nome, T2.P[j].nome);
+        if (T1.P[i].vida <= 0){
+            fprintf(arquivo,"%s venceu %s\n",T2.P[j].nome, T1.P[i].nome);
+            printf("%s venceu %s\n",T2.P[j].nome, T1.P[i].nome);
             i++;
-            //continue;//vou ter que usar para comeca outra rodada
+            if (i >= T1.quantidade) break;
         }
-        rodada++;
+        rodada++;//muda valor
 
-    } while ((i < T1.quantidade) && (j<T2.quantidade));
+    };
 
     if (i< T1.quantidade){
-        //fprintf();
-        printf("--------------Jogador1 %s venceu !----------\n",T1.nome);
+        fprintf(arquivo,"Jogador 1 %s venceu\n",T1.nome);//soh por seguranca
+        printf("--------------Jogador 1 %s venceu !----------\n",T1.nome);
     }else{
-        printf("--------------Jogador1 %s venceu !----------\n",T2.nome);
+        fprintf(arquivo,"Jogador 2 %s venceu\n",T2.nome);
+        printf("--------------Jogador 2 %s venceu !----------\n",T2.nome);
     }
-    
-        
-        
 
-         
-    /*
-    for (i ; i < T1.quantidade; i++){
-        for (j ; j < T2.quantidade; j++){
-            printf("\nJogada %d:\n", i+1);
-            efeito(T1.P[i].nome,T2.P[j].nome, T1.P[i].tipo, T2.P[j].tipo, T1.P[i].ataque, T2.P[j].defesa, &T2.P[j].vida);
-            printf("\nDEBUG 2\n");
-
-            if (T1.P[j].vida <= 0){
-                printf("%s matou %s",T1.P[i].nome, T2.P[j].nome);
-                printf("\nDEBUG 3\n");
-            }
-                
+    //SOBREVIVENTES--------------------------------------------------------------------
+    fprintf(arquivo,"Pokemons sobreviventes Jogador 1 %s: \n",T1.nome);
+    printf("Pokemons sobreviventes Jogador 1, %s: \n",T1.nome);
+    for (int k = 0; k < T1.quantidade; k++){
+        if (T1.P[k].vida > 0){
+            fprintf(arquivo,"%s\t",T1.P[k].nome);
+            printf("%s\t",T1.P[k].nome);
+        }else{
+                fprintf(arquivo,"");
+                printf("");
         }
-        if (T1.P[i].vida <= 0){
-            printf("%s matou %s",T2.P[j].nome, T1.P[i].nome);
-            printf("\nDEBUG 4\n");   
-            
     }
-    */
-    printf("\nDEBUG 5\n");
+
+
+    fprintf(arquivo,"\nPokemons sobreviventes Jogador 2 %s: \n",T2.nome);
+    printf("\nPokemons sobreviventes Jogador 2, %s: \n",T2.nome);
+    for (int l = 0; l < T2.quantidade; l++){
+        if (T2.P[l].vida > 0){
+            fprintf(arquivo,"%s\t",T2.P[l].nome);
+            printf("%s\t",T2.P[l].nome);
+        }else{
+            fprintf(arquivo,"");
+            printf("");
+        }
+    }
+
+
+    //DERROTADOS--------------------------------------------------------------------
+    fprintf(arquivo,"\nPokemons derrotados Jogador 1 %s: \n",T1.nome);
+    printf("\nPokemons derrotados Jogador 1, %s: \n",T1.nome);
+    for (int k = 0; k < T1.quantidade; k++){
+        if ( T1.P[k].vida <= 0){
+            fprintf(arquivo,"%s\t",T1.P[k].nome);
+            printf("%s\t",T1.P[k].nome);
+        }else{
+            fprintf(arquivo,"");
+            printf("");
+        }
+    }
+
+
+    fprintf(arquivo,"\nPokemons derrotados Jogador 2 %s: \n",T2.nome);
+    printf("\nPokemons derrotados Jogador 2, %s: \n",T2.nome);
+    for (int l = 0; l < T2.quantidade; l++){
+        if ( T2.P[l].vida <= 0){
+            fprintf(arquivo,"%s\t",T2.P[l].nome);
+            printf("%s\t",T2.P[l].nome);
+        }else{
+            fprintf(arquivo,"");
+            printf("");
+        }
+    }
+
     
-    //fclose(arquivo);   
+    //printf("\nDEBUG 5\n");
+    
+    fclose(arquivo);   
     return 0;
 }

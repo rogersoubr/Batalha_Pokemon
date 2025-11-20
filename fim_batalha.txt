@@ -1,0 +1,17 @@
+Charizard venceu Golduck
+Geodude venceu Charizard
+Slowbro venceu Geodude
+Raichu venceu Slowbro
+Magnemite venceu Raichu
+Magnemite venceu Rapidash
+Rhydon venceu Magnemite
+Dewgong venceu Rhydon
+Jogador 2 souz venceu
+Pokemons sobreviventes Jogador 1 roger: 
+
+Pokemons sobreviventes Jogador 2 souz: 
+Dewgong	Tentacool	Graveler	Marowak	
+Pokemons derrotados Jogador 1 roger: 
+Golduck	Geodude	Raichu	Rapidash	Rhydon	
+Pokemons derrotados Jogador 2 souz: 
+Charizard	Slowbro	Magnemite	
